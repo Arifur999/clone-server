@@ -68,6 +68,28 @@ app.post("/api/users", async (req, res) => {
   }
 });
 
+
+
+// Get all users
+app.get("/api/users", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM app_users ORDER BY id DESC");
+
+    res.json({
+      success: true,
+      count: result.rows.length,
+      users: result.rows,
+    });
+  } catch (err) {
+    console.error("Fetch error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Could not fetch users",
+      error: err.message,
+    });
+  }
+});
+
 // Start server
 const port = process.env.PORT || 5000;
 app.listen(port, () => console.log(`Server running on port ${port}`));
