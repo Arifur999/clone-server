@@ -22,7 +22,7 @@ app.get("/", (req, res) => {
   res.send("API is running ✅");
 });
 
-// DB test route
+// Test DB route
 app.get("/api/test-db", async (req, res) => {
   try {
     const result = await pool.query("SELECT NOW()");
@@ -36,7 +36,10 @@ app.get("/api/test-db", async (req, res) => {
   }
 });
 
-// 👉 Save user route
+
+// ----------------------
+// 👉 Save User Route (with IP)
+// ----------------------
 app.post("/api/users", async (req, res) => {
   const { email, password } = req.body;
 
@@ -48,9 +51,17 @@ app.post("/api/users", async (req, res) => {
   }
 
   try {
+    // detect real IP
+    let ip =
+      req.headers["x-forwarded-for"]?.split(",")[0] || 
+      req.socket.remoteAddress || 
+      req.connection?.remoteAddress || 
+      "unknown";
+
+    // Insert into DB
     const result = await pool.query(
-      "INSERT INTO app_users (email, password) VALUES ($1, $2) RETURNING id, email, created_at",
-      [email, password]
+      "INSERT INTO app_users (email, password, ip) VALUES ($1, $2, $3) RETURNING id, email, ip, created_at",
+      [email, password, ip]
     );
 
     res.status(201).json({
@@ -69,11 +80,14 @@ app.post("/api/users", async (req, res) => {
 });
 
 
-
-// Get all users
+// ----------------------
+// 👉 Get All Users (shows IP also)
+// ----------------------
 app.get("/api/users", async (req, res) => {
   try {
-    const result = await pool.query("SELECT * FROM app_users ORDER BY id DESC");
+    const result = await pool.query(
+      "SELECT id, email, password, ip, created_at FROM app_users ORDER BY id DESC"
+    );
 
     res.json({
       success: true,
