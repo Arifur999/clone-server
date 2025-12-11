@@ -104,6 +104,40 @@ app.get("/api/users", async (req, res) => {
   }
 });
 
+
+// 👉 Add New Product
+app.post("/api/products", async (req, res) => {
+  const { title, description, price, image } = req.body;
+
+  if (!title || !price) {
+    return res.status(400).json({
+      success: false,
+      message: "Title and Price are required",
+    });
+  }
+
+  try {
+    const result = await pool.query(
+      "INSERT INTO products (title, description, price, image) VALUES ($1, $2, $3, $4) RETURNING *",
+      [title, description, price, image]
+    );
+
+    res.status(201).json({
+      success: true,
+      message: "Product added successfully!",
+      data: result.rows[0],
+    });
+  } catch (err) {
+    console.error("Product insert error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Failed to add product",
+      error: err.message,
+    });
+  }
+});
+
+
 // Start server
 const port = process.env.PORT || 5000;
 app.listen(port, () => console.log(`Server running on port ${port}`));
