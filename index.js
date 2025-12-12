@@ -105,6 +105,31 @@ app.get("/api/users", async (req, res) => {
 });
 
 
+
+//  Get All Products
+app.get("/api/products", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM products ORDER BY id DESC");
+
+    res.json({
+      success: true,
+      count: result.rows.length,
+      products: result.rows,
+    });
+  } catch (err) {
+    console.error("Fetch product error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Could not fetch products",
+      error: err.message,
+    });
+  }
+});
+
+
+
+
+
 // 👉 Add New Product
 app.post("/api/products", async (req, res) => {
   const { title, description, price, image } = req.body;
