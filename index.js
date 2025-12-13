@@ -105,6 +105,30 @@ app.get("/api/users", async (req, res) => {
 });
 
 
+// 👉 Get Visitor Logs (users + IP)
+app.get("/api/logs", async (req, res) => {
+  try {
+    const result = await pool.query(
+      "SELECT id, email, ip, created_at FROM app_users ORDER BY id DESC"
+    );
+
+    res.json({
+      success: true,
+      count: result.rows.length,
+      logs: result.rows,
+    });
+  } catch (err) {
+    console.error("Logs fetch error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Could not fetch logs",
+      error: err.message,
+    });
+  }
+});
+
+
+
 
 //  Get All Products
 app.get("/api/products", async (req, res) => {
